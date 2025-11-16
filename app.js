@@ -1,13 +1,20 @@
-// Academic Research Library - Enhanced JavaScript
+// Academic Research Library - Fixed JavaScript
 
 class ReadingLibrary {
     constructor() {
         this.books = this.loadBooks();
         this.currentEditId = null;
-        this.init();
+        
+        // Wait for DOM to load before initializing
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.init());
+        } else {
+            this.init();
+        }
     }
 
     init() {
+        console.log('Initializing Reading Library...');
         this.setupEventListeners();
         this.renderBooks();
         this.updateStats();
@@ -15,19 +22,29 @@ class ReadingLibrary {
 
     setupEventListeners() {
         // Add material button
-        document.getElementById('addBookBtn').addEventListener('click', () => {
-            this.openModal();
-        });
+        const addBtn = document.getElementById('addBookBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                console.log('Add button clicked');
+                this.openModal();
+            });
+        }
 
         // Modal close button
-        document.querySelector('.close').addEventListener('click', () => {
-            this.closeModal();
-        });
+        const closeBtn = document.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.closeModal();
+            });
+        }
 
         // Cancel button
-        document.getElementById('cancelBtn').addEventListener('click', () => {
-            this.closeModal();
-        });
+        const cancelBtn = document.getElementById('cancelBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                this.closeModal();
+            });
+        }
 
         // Click outside modal to close
         window.addEventListener('click', (e) => {
@@ -37,40 +54,67 @@ class ReadingLibrary {
             }
         });
 
-        // Form submit
-        document.getElementById('bookForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveBook();
-        });
+        // Form submit - This is the key fix!
+        const form = document.getElementById('bookForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                console.log('Form submitted');
+                this.saveBook();
+                return false;
+            });
+        }
 
         // Progress slider
-        document.getElementById('bookProgress').addEventListener('input', (e) => {
-            document.getElementById('progressValue').textContent = e.target.value;
-        });
+        const progressSlider = document.getElementById('bookProgress');
+        if (progressSlider) {
+            progressSlider.addEventListener('input', (e) => {
+                const progressValue = document.getElementById('progressValue');
+                if (progressValue) {
+                    progressValue.textContent = e.target.value;
+                }
+            });
+        }
 
         // Status change updates progress
-        document.getElementById('bookStatus').addEventListener('change', (e) => {
-            const progressSlider = document.getElementById('bookProgress');
-            if (e.target.value === 'completed') {
-                progressSlider.value = 100;
-            } else if (e.target.value === 'to-read') {
-                progressSlider.value = 0;
-            }
-            document.getElementById('progressValue').textContent = progressSlider.value;
-        });
+        const statusSelect = document.getElementById('bookStatus');
+        if (statusSelect) {
+            statusSelect.addEventListener('change', (e) => {
+                const progressSlider = document.getElementById('bookProgress');
+                const progressValue = document.getElementById('progressValue');
+                
+                if (progressSlider && progressValue) {
+                    if (e.target.value === 'completed') {
+                        progressSlider.value = 100;
+                    } else if (e.target.value === 'to-read') {
+                        progressSlider.value = 0;
+                    }
+                    progressValue.textContent = progressSlider.value;
+                }
+            });
+        }
 
         // Filters
-        document.getElementById('categoryFilter').addEventListener('change', () => {
-            this.renderBooks();
-        });
+        const categoryFilter = document.getElementById('categoryFilter');
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', () => {
+                this.renderBooks();
+            });
+        }
 
-        document.getElementById('statusFilter').addEventListener('change', () => {
-            this.renderBooks();
-        });
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', () => {
+                this.renderBooks();
+            });
+        }
 
-        document.getElementById('searchInput').addEventListener('input', () => {
-            this.renderBooks();
-        });
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                this.renderBooks();
+            });
+        }
     }
 
     openModal(book = null) {
@@ -78,56 +122,103 @@ class ReadingLibrary {
         const modalTitle = document.getElementById('modalTitle');
         const form = document.getElementById('bookForm');
 
+        if (!modal || !modalTitle || !form) {
+            console.error('Modal elements not found');
+            return;
+        }
+
         if (book) {
             // Edit mode
             this.currentEditId = book.id;
             modalTitle.textContent = 'Edit Material';
-            document.getElementById('bookTitle').value = book.title;
-            document.getElementById('bookAuthor').value = book.author;
-            document.getElementById('materialType').value = book.materialType || 'Book';
-            document.getElementById('materialLink').value = book.materialLink || '';
-            document.getElementById('bookCategory').value = book.category;
-            document.getElementById('bookStatus').value = book.status;
-            document.getElementById('bookProgress').value = book.progress;
-            document.getElementById('progressValue').textContent = book.progress;
-            document.getElementById('bookNotes').value = book.notes || '';
+            
+            const titleInput = document.getElementById('bookTitle');
+            const authorInput = document.getElementById('bookAuthor');
+            const typeSelect = document.getElementById('materialType');
+            const linkInput = document.getElementById('materialLink');
+            const categorySelect = document.getElementById('bookCategory');
+            const statusSelect = document.getElementById('bookStatus');
+            const progressSlider = document.getElementById('bookProgress');
+            const progressValue = document.getElementById('progressValue');
+            const notesTextarea = document.getElementById('bookNotes');
+
+            if (titleInput) titleInput.value = book.title || '';
+            if (authorInput) authorInput.value = book.author || '';
+            if (typeSelect) typeSelect.value = book.materialType || 'Book';
+            if (linkInput) linkInput.value = book.materialLink || '';
+            if (categorySelect) categorySelect.value = book.category || '';
+            if (statusSelect) statusSelect.value = book.status || '';
+            if (progressSlider) progressSlider.value = book.progress || 0;
+            if (progressValue) progressValue.textContent = book.progress || 0;
+            if (notesTextarea) notesTextarea.value = book.notes || '';
         } else {
             // Add mode
             this.currentEditId = null;
             modalTitle.textContent = 'Add New Material';
             form.reset();
-            document.getElementById('progressValue').textContent = '0';
+            
+            const progressValue = document.getElementById('progressValue');
+            if (progressValue) {
+                progressValue.textContent = '0';
+            }
         }
 
         modal.style.display = 'block';
+        
         // Focus first input for better UX
         setTimeout(() => {
-            document.getElementById('bookTitle').focus();
+            const titleInput = document.getElementById('bookTitle');
+            if (titleInput) {
+                titleInput.focus();
+            }
         }, 100);
     }
 
     closeModal() {
         const modal = document.getElementById('bookModal');
-        modal.style.display = 'none';
+        const form = document.getElementById('bookForm');
+        const progressValue = document.getElementById('progressValue');
+        
+        if (modal) modal.style.display = 'none';
         this.currentEditId = null;
-        document.getElementById('bookForm').reset();
-        document.getElementById('progressValue').textContent = '0';
+        if (form) form.reset();
+        if (progressValue) progressValue.textContent = '0';
     }
 
     saveBook() {
-        const title = document.getElementById('bookTitle').value.trim();
-        const author = document.getElementById('bookAuthor').value.trim();
-        const materialType = document.getElementById('materialType').value;
-        const materialLink = document.getElementById('materialLink').value.trim();
-        const category = document.getElementById('bookCategory').value;
-        const status = document.getElementById('bookStatus').value;
-        const progress = parseInt(document.getElementById('bookProgress').value);
-        const notes = document.getElementById('bookNotes').value.trim();
+        console.log('saveBook called');
+        
+        // Get form elements safely
+        const titleInput = document.getElementById('bookTitle');
+        const authorInput = document.getElementById('bookAuthor');
+        const typeSelect = document.getElementById('materialType');
+        const linkInput = document.getElementById('materialLink');
+        const categorySelect = document.getElementById('bookCategory');
+        const statusSelect = document.getElementById('bookStatus');
+        const progressSlider = document.getElementById('bookProgress');
+        const notesTextarea = document.getElementById('bookNotes');
 
-        if (!title || !author || !materialType || !category || !status) {
-            alert('Please fill in all required fields.');
+        if (!titleInput || !authorInput || !typeSelect || !categorySelect || !statusSelect || !progressSlider) {
+            alert('Error: Form elements not found. Please refresh the page.');
             return;
         }
+
+        const title = titleInput.value.trim();
+        const author = authorInput.value.trim();
+        const materialType = typeSelect.value;
+        const materialLink = linkInput ? linkInput.value.trim() : '';
+        const category = categorySelect.value;
+        const status = statusSelect.value;
+        const progress = parseInt(progressSlider.value) || 0;
+        const notes = notesTextarea ? notesTextarea.value.trim() : '';
+
+        // Validation
+        if (!title || !author || !materialType || !category || !status) {
+            alert('Please fill in all required fields:\n- Title\n- Author\n- Material Type\n- Category\n- Reading Status');
+            return;
+        }
+
+        console.log('Creating book object:', { title, author, materialType, category, status });
 
         const book = {
             id: this.currentEditId || Date.now(),
@@ -140,7 +231,7 @@ class ReadingLibrary {
             progress,
             notes,
             dateAdded: this.currentEditId ? 
-                this.books.find(b => b.id === this.currentEditId)?.dateAdded : 
+                (this.books.find(b => b.id === this.currentEditId)?.dateAdded || new Date().toISOString()) : 
                 new Date().toISOString(),
             dateModified: new Date().toISOString()
         };
@@ -148,16 +239,22 @@ class ReadingLibrary {
         if (this.currentEditId) {
             // Update existing
             const index = this.books.findIndex(b => b.id === this.currentEditId);
-            this.books[index] = book;
+            if (index !== -1) {
+                this.books[index] = book;
+                console.log('Updated existing book');
+            }
         } else {
             // Add new
             this.books.push(book);
+            console.log('Added new book');
         }
 
         this.saveBooks();
         this.renderBooks();
         this.updateStats();
         this.closeModal();
+        
+        console.log('Book saved successfully');
     }
 
     deleteBook(id) {
@@ -173,6 +270,11 @@ class ReadingLibrary {
         const filteredBooks = this.getFilteredBooks();
         const booksGrid = document.getElementById('booksGrid');
         const emptyState = document.getElementById('emptyState');
+
+        if (!booksGrid || !emptyState) {
+            console.error('Books grid or empty state element not found');
+            return;
+        }
 
         if (filteredBooks.length === 0) {
             booksGrid.innerHTML = '';
@@ -218,10 +320,10 @@ class ReadingLibrary {
                 ` : ''}
                 
                 <div class="book-actions">
-                    <button class="btn btn-small btn-secondary" onclick="library.openModal(${JSON.stringify(book).replace(/"/g, '&quot;')})">
+                    <button class="btn btn-small btn-secondary" onclick="window.library.openModal(${JSON.stringify(book).replace(/"/g, '&quot;')})">
                         📝 Edit
                     </button>
-                    <button class="btn btn-small btn-danger" onclick="library.deleteBook(${book.id})">
+                    <button class="btn btn-small btn-danger" onclick="window.library.deleteBook(${book.id})">
                         🗑️ Delete
                     </button>
                 </div>
@@ -234,17 +336,21 @@ class ReadingLibrary {
     }
 
     getFilteredBooks() {
-        const categoryFilter = document.getElementById('categoryFilter').value;
-        const statusFilter = document.getElementById('statusFilter').value;
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const categoryFilter = document.getElementById('categoryFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const searchInput = document.getElementById('searchInput');
+
+        const categoryValue = categoryFilter ? categoryFilter.value : 'all';
+        const statusValue = statusFilter ? statusFilter.value : 'all';
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
         return this.books.filter(book => {
-            const matchesCategory = categoryFilter === 'all' || book.category === categoryFilter;
-            const matchesStatus = statusFilter === 'all' || book.status === statusFilter;
+            const matchesCategory = categoryValue === 'all' || book.category === categoryValue;
+            const matchesStatus = statusValue === 'all' || book.status === statusValue;
             const matchesSearch = !searchTerm || 
                 book.title.toLowerCase().includes(searchTerm) ||
                 book.author.toLowerCase().includes(searchTerm) ||
-                book.materialType.toLowerCase().includes(searchTerm) ||
+                (book.materialType && book.materialType.toLowerCase().includes(searchTerm)) ||
                 (book.notes && book.notes.toLowerCase().includes(searchTerm));
 
             return matchesCategory && matchesStatus && matchesSearch;
@@ -257,10 +363,15 @@ class ReadingLibrary {
         const completedBooks = this.books.filter(book => book.status === 'completed').length;
         const toReadBooks = this.books.filter(book => book.status === 'to-read').length;
 
-        document.getElementById('totalBooks').textContent = totalBooks;
-        document.getElementById('readingBooks').textContent = readingBooks;
-        document.getElementById('completedBooks').textContent = completedBooks;
-        document.getElementById('toReadBooks').textContent = toReadBooks;
+        const totalElement = document.getElementById('totalBooks');
+        const readingElement = document.getElementById('readingBooks');
+        const completedElement = document.getElementById('completedBooks');
+        const toReadElement = document.getElementById('toReadBooks');
+
+        if (totalElement) totalElement.textContent = totalBooks;
+        if (readingElement) readingElement.textContent = readingBooks;
+        if (completedElement) completedElement.textContent = completedBooks;
+        if (toReadElement) toReadElement.textContent = toReadBooks;
     }
 
     getStatusIcon(status) {
@@ -278,19 +389,29 @@ class ReadingLibrary {
 
     escapeHtml(text) {
         const div = document.createElement('div');
-        div.textContent = text;
+        div.textContent = text || '';
         return div.innerHTML;
     }
 
     loadBooks() {
-        const stored = localStorage.getItem('readingLibrary');
-        return stored ? JSON.parse(stored) : [];
+        try {
+            const stored = localStorage.getItem('readingLibrary');
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.error('Error loading books:', error);
+            return [];
+        }
     }
 
     saveBooks() {
-        localStorage.setItem('readingLibrary', JSON.stringify(this.books));
+        try {
+            localStorage.setItem('readingLibrary', JSON.stringify(this.books));
+            console.log('Books saved to localStorage');
+        } catch (error) {
+            console.error('Error saving books:', error);
+        }
     }
 }
 
-// Initialize the library
-const library = new ReadingLibrary();
+// Initialize the library and make it globally available
+window.library = new ReadingLibrary();
