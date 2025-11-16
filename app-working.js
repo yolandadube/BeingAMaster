@@ -6,6 +6,10 @@ class ReadingLibrary {
         console.log('ReadingLibrary constructor called');
         this.books = JSON.parse(localStorage.getItem('readingLibrary')) || [];
         console.log('Loaded books from localStorage:', this.books.length, 'books');
+        
+        // Fix inconsistent status values
+        this.normalizeBookStatuses();
+        
         console.log('Books data:', this.books);
         this.currentEditId = null;
         this.currentFilter = 'all';
@@ -24,6 +28,53 @@ class ReadingLibrary {
             document.addEventListener('DOMContentLoaded', () => this.init());
         } else {
             this.init();
+        }
+    }
+
+    normalizeBookStatuses() {
+        console.log('Normalizing book statuses...');
+        let fixed = 0;
+        
+        this.books.forEach(book => {
+            const oldStatus = book.status;
+            
+            // Normalize status values
+            switch(book.status?.toLowerCase()) {
+                case 'to read':
+                case 'to-read':
+                case 'toread':
+                    book.status = 'To Read';
+                    break;
+                case 'reading':
+                case 'currently reading':
+                    book.status = 'Reading';
+                    break;
+                case 'completed':
+                case 'finished':
+                case 'done':
+                    book.status = 'Completed';
+                    break;
+                case 'paused':
+                case 'on hold':
+                case 'stopped':
+                    book.status = 'Paused';
+                    break;
+                default:
+                    // Default to 'To Read' if status is missing or invalid
+                    if (!book.status || !['To Read', 'Reading', 'Completed', 'Paused'].includes(book.status)) {
+                        book.status = 'To Read';
+                    }
+            }
+            
+            if (oldStatus !== book.status) {
+                console.log(`Fixed status: "${oldStatus}" → "${book.status}" for book "${book.title}"`);
+                fixed++;
+            }
+        });
+        
+        if (fixed > 0) {
+            console.log(`Fixed ${fixed} book statuses`);
+            this.saveBooks();
         }
     }
 
@@ -241,6 +292,11 @@ class ReadingLibrary {
         
         // Filter books based on current filter and search
         let filteredBooks = this.books.filter(book => {
+            // Ensure book has valid status
+            if (!book.status || !['To Read', 'Reading', 'Completed', 'Paused'].includes(book.status)) {
+                book.status = 'To Read';
+            }
+            
             console.log(`Checking book "${book.title}" with status "${book.status}" against filter "${this.currentFilter}"`);
             const matchesFilter = this.currentFilter === 'all' || book.status === this.currentFilter;
             const matchesSearch = this.searchQuery === '' || 
@@ -350,27 +406,45 @@ class ReadingLibrary {
 
     updateStats() {
         console.log('Updating stats. Total books:', this.books.length);
-        console.log('Books by status:', this.books.reduce((acc, book) => {
-            acc[book.status] = (acc[book.status] || 0) + 1;
-            return acc;
-        }, {}));
+        
+        // Count by exact status values
+        const statusCounts = {
+            'To Read': 0,
+            'Reading': 0, 
+            'Completed': 0,
+            'Paused': 0
+        };
+        
+        this.books.forEach(book => {
+            if (statusCounts.hasOwnProperty(book.status)) {
+                statusCounts[book.status]++;
+            } else {
+                console.warn('Unknown status found:', book.status, 'for book:', book.title);
+                // Auto-fix unknown status
+                book.status = 'To Read';
+                statusCounts['To Read']++;
+            }
+        });
+        
+        console.log('Status counts:', statusCounts);
         
         const totalElement = document.getElementById('totalBooks');
         const readingElement = document.getElementById('readingBooks');
         const completedElement = document.getElementById('completedBooks');
         const toReadElement = document.getElementById('toReadBooks');
         
-        const toReadCount = this.books.filter(b => b.status === 'To Read').length;
-        const readingCount = this.books.filter(b => b.status === 'Reading').length;
-        const completedCount = this.books.filter(b => b.status === 'Completed').length;
-        const pausedCount = this.books.filter(b => b.status === 'Paused').length;
-        
         if (totalElement) totalElement.textContent = this.books.length;
-        if (toReadElement) toReadElement.textContent = toReadCount;
-        if (readingElement) readingElement.textContent = readingCount;
-        if (completedElement) completedElement.textContent = completedCount;
+        if (toReadElement) toReadElement.textContent = statusCounts['To Read'];
+        if (readingElement) readingElement.textContent = statusCounts['Reading'];
+        if (completedElement) completedElement.textContent = statusCounts['Completed'];
         
-        console.log('Stats updated:', { total: this.books.length, toRead: toReadCount, reading: readingCount, completed: completedCount, paused: pausedCount });
+        console.log('Stats updated:', {
+            total: this.books.length,
+            toRead: statusCounts['To Read'],
+            reading: statusCounts['Reading'],
+            completed: statusCounts['Completed'],
+            paused: statusCounts['Paused']
+        });
     }
 
     editBook(id) {
