@@ -1,0 +1,25 @@
+{
+  "name": "being-a-master",
+  "version": "1.0.0",
+  "description": "Personal development and coaching website",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx live-server --port=3000 --host=localhost",
+    "start": "npx live-server --port=8080",
+    "build": "echo 'Build completed - ready for deployment'",
+    "deploy-netlify": "netlify deploy --prod --dir=.",
+    "deploy-vercel": "vercel --prod"
+  },
+  "keywords": [
+    "personal-development",
+    "coaching",
+    "website",
+    "portfolio"
+  ],
+  "author": "Yolanda",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {}
+}

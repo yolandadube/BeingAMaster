@@ -186,7 +186,7 @@ class ReadingLibrary {
     }
 
     saveBook() {
-        console.log('saveBook called');
+        console.log('=== SAVE BOOK FUNCTION CALLED ===');
         
         // Get form elements safely
         const titleInput = document.getElementById('bookTitle');
@@ -197,6 +197,15 @@ class ReadingLibrary {
         const statusSelect = document.getElementById('bookStatus');
         const progressSlider = document.getElementById('bookProgress');
         const notesTextarea = document.getElementById('bookNotes');
+        
+        console.log('Form elements found:', {
+            titleInput: !!titleInput,
+            authorInput: !!authorInput,
+            typeSelect: !!typeSelect,
+            categorySelect: !!categorySelect,
+            statusSelect: !!statusSelect,
+            progressSlider: !!progressSlider
+        });
 
         if (!titleInput || !authorInput || !typeSelect || !categorySelect || !statusSelect || !progressSlider) {
             alert('Error: Form elements not found. Please refresh the page.');
