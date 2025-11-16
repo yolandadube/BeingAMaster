@@ -5,6 +5,8 @@ class ReadingLibrary {
     constructor() {
         console.log('ReadingLibrary constructor called');
         this.books = JSON.parse(localStorage.getItem('readingLibrary')) || [];
+        console.log('Loaded books from localStorage:', this.books.length, 'books');
+        console.log('Books data:', this.books);
         this.currentEditId = null;
         
         // Wait for DOM to be ready
@@ -155,16 +157,21 @@ class ReadingLibrary {
 
     renderBooks() {
         console.log('Rendering books...');
-        const container = document.getElementById('booksContainer');
+        console.log('Number of books to render:', this.books.length);
+        const container = document.getElementById('bookList');
         if (!container) {
             console.error('Books container not found');
             return;
         }
+        console.log('Container found:', container);
 
         if (this.books.length === 0) {
             container.innerHTML = '<div class="empty-state">No materials added yet. Click "Add New Material" to get started!</div>';
+            console.log('Showing empty state');
             return;
         }
+
+        console.log('Rendering', this.books.length, 'books');
 
         container.innerHTML = this.books.map(book => `
             <div class="book-card" data-id="${book.id}">
@@ -194,12 +201,14 @@ class ReadingLibrary {
 
     updateStats() {
         const totalElement = document.getElementById('totalBooks');
-        const readingElement = document.getElementById('currentlyReading');
-        const completedElement = document.getElementById('completed');
+        const readingElement = document.getElementById('readingBooks');
+        const completedElement = document.getElementById('completedBooks');
+        const toReadElement = document.getElementById('toReadBooks');
 
         if (totalElement) totalElement.textContent = this.books.length;
         if (readingElement) readingElement.textContent = this.books.filter(b => b.status === 'Reading').length;
         if (completedElement) completedElement.textContent = this.books.filter(b => b.status === 'Completed').length;
+        if (toReadElement) toReadElement.textContent = this.books.filter(b => b.status === 'To Read').length;
     }
 
     editBook(id) {
