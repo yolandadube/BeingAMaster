@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { getBooks, addBook, updateBook, deleteBook } from '@/lib/db/storage';
+import { getBooks, addBook, deleteBook } from '@/lib/db/storage';
 import { Book, ReadingStatus, SubjectArea } from '@/lib/types';
-import { BookOpen, Plus, Trash2, Edit } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { getSubjectColor, getDifficultyColor } from '@/lib/utils';
 
 export default function ReadingList() {
@@ -14,13 +14,14 @@ export default function ReadingList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
 
-  useEffect(() => {
-    loadBooks();
-  }, []);
-
   const loadBooks = () => {
     setBooks(getBooks());
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadBooks();
+  }, []);
 
   const filteredBooks = books.filter(book => {
     const matchesFilter = filter === 'all' || book.status === filter;
@@ -43,7 +44,7 @@ export default function ReadingList() {
       subject: formData.get('subject') as SubjectArea,
       status: formData.get('status') as ReadingStatus,
       totalPages: parseInt(formData.get('totalPages') as string) || undefined,
-      difficulty: formData.get('difficulty') as any,
+      difficulty: (formData.get('difficulty') as string) as 'beginner' | 'intermediate' | 'advanced' | 'expert' | undefined,
       tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()).filter(Boolean),
     });
     

@@ -14,7 +14,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     initializeSampleData();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBooks(getBooks());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTasks(getTasks());
   }, []);
 

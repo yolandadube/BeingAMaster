@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, Library, FileText, GraduationCap, Cross, Brain, Calculator, Atom, Telescope } from 'lucide-react';
+import { Home, BookOpen, Library, FileText, Cross, Brain, Calculator, Atom, Telescope } from 'lucide-react';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },

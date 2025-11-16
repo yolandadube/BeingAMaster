@@ -1,6 +1,6 @@
 'use client';
 
-import { Book, Note, Quote, StudyTask, BibleReading, Flashcard } from '@/lib/types';
+import { Book, Note, StudyTask } from '@/lib/types';
 import { generateId } from '@/lib/utils';
 
 // Mock data storage using localStorage (for demo purposes)

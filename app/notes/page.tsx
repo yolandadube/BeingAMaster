@@ -21,13 +21,14 @@ export default function NotesPage() {
   const [editContent, setEditContent] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    loadNotes();
-  }, []);
-
   const loadNotes = () => {
     setNotes(getNotes());
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadNotes();
+  }, []);
 
   const filteredNotes = notes.filter(note =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
