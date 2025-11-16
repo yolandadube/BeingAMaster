@@ -24,6 +24,7 @@ class ReadingLibrary {
         this.currentPage = 1;
         this.booksPerPage = 6;
         this.currentFilter = 'all';
+        this.currentCategoryFilter = 'all';
         this.currentSort = 'dateAdded';
         this.searchQuery = '';
         this.currentPage = 1;
@@ -207,6 +208,48 @@ class ReadingLibrary {
                 this.renderBooks();
             });
         }
+        
+        // Category filter dropdown
+        const categoryFilter = document.getElementById('categoryFilter');
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', (e) => {
+                console.log('Category filter changed:', e.target.value);
+                this.currentCategoryFilter = e.target.value;
+                this.currentPage = 1;
+                this.renderBooks();
+            });
+        }
+        
+        // Status filter dropdown
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', (e) => {
+                console.log('Status filter changed:', e.target.value);
+                const filterValue = e.target.value;
+                
+                // Map dropdown values to normalized status values
+                const statusMap = {
+                    'all': 'all',
+                    'to-read': 'To Read',
+                    'reading': 'Reading',
+                    'completed': 'Completed',
+                    'paused': 'Paused'
+                };
+                
+                this.currentFilter = statusMap[filterValue] || 'all';
+                this.currentPage = 1;
+                
+                // Update button filters to match
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.filter === this.currentFilter) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                this.renderBooks();
+            });
+        }
     }
 
     openModal() {
@@ -340,13 +383,14 @@ class ReadingLibrary {
                 book.status = 'To Read';
             }
             
-            const matchesFilter = this.currentFilter === 'all' || book.status === this.currentFilter;
+            const matchesStatusFilter = this.currentFilter === 'all' || book.status === this.currentFilter;
+            const matchesCategoryFilter = this.currentCategoryFilter === 'all' || book.category === this.currentCategoryFilter;
             const matchesSearch = this.searchQuery === '' || 
                 book.title.toLowerCase().includes(this.searchQuery) ||
                 book.author.toLowerCase().includes(this.searchQuery) ||
                 book.materialType.toLowerCase().includes(this.searchQuery) ||
                 book.category.toLowerCase().includes(this.searchQuery);
-            return matchesFilter && matchesSearch;
+            return matchesStatusFilter && matchesCategoryFilter && matchesSearch;
         });
         
         console.log('Filtered books:', filteredBooks.length);
@@ -688,12 +732,21 @@ class ReadingLibrary {
     
     clearFilters() {
         this.currentFilter = 'all';
+        this.currentCategoryFilter = 'all';
         this.searchQuery = '';
         this.currentPage = 1;
         
         // Reset search input
         const searchInput = document.getElementById('searchInput');
         if (searchInput) searchInput.value = '';
+        
+        // Reset category filter
+        const categoryFilter = document.getElementById('categoryFilter');
+        if (categoryFilter) categoryFilter.value = 'all';
+        
+        // Reset status filter
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) statusFilter.value = 'all';
         
         // Reset filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
