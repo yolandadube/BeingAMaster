@@ -29,9 +29,13 @@ class ReadingLibrary {
 
     init() {
         console.log('=== INITIALIZING LIBRARY ===');
-        this.setupEventListeners();
         this.renderBooks();
         this.updateStats();
+        
+        // Delay event listeners to ensure DOM is ready
+        setTimeout(() => {
+            this.setupEventListeners();
+        }, 500);
     }
 
     setupEventListeners() {
@@ -91,13 +95,21 @@ class ReadingLibrary {
         }
         
         // Filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        console.log('Found filter buttons:', filterButtons.length);
+        
+        filterButtons.forEach(btn => {
+            console.log('Setting up filter button:', btn.dataset.filter);
             btn.addEventListener('click', (e) => {
                 console.log('Filter clicked:', e.target.dataset.filter);
                 this.currentFilter = e.target.dataset.filter;
                 this.currentPage = 1;
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                
+                // Update active state
+                filterButtons.forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
+                
+                console.log('Current filter set to:', this.currentFilter);
                 this.renderBooks();
             });
         });
@@ -208,6 +220,11 @@ class ReadingLibrary {
         console.log('Current filter:', this.currentFilter, 'Search:', this.searchQuery);
         console.log('Number of books to render:', this.books.length);
         
+        // Debug: Show all book statuses
+        const statuses = this.books.map(book => book.status);
+        console.log('All book statuses:', statuses);
+        console.log('Unique statuses:', [...new Set(statuses)]);
+        
         // Try multiple possible container IDs
         let container = document.getElementById('bookList');
         if (!container) {
@@ -224,13 +241,16 @@ class ReadingLibrary {
         
         // Filter books based on current filter and search
         let filteredBooks = this.books.filter(book => {
+            console.log(`Checking book "${book.title}" with status "${book.status}" against filter "${this.currentFilter}"`);
             const matchesFilter = this.currentFilter === 'all' || book.status === this.currentFilter;
             const matchesSearch = this.searchQuery === '' || 
                 book.title.toLowerCase().includes(this.searchQuery) ||
                 book.author.toLowerCase().includes(this.searchQuery) ||
                 book.materialType.toLowerCase().includes(this.searchQuery) ||
                 book.category.toLowerCase().includes(this.searchQuery);
-            return matchesFilter && matchesSearch;
+            const matches = matchesFilter && matchesSearch;
+            console.log(`Book matches: ${matches} (filter: ${matchesFilter}, search: ${matchesSearch})`);
+            return matches;
         });
         
         console.log('After filtering:', filteredBooks.length, 'books');
