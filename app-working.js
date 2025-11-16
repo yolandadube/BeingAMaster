@@ -118,17 +118,21 @@ class ReadingLibrary {
             });
         }
         
-        // Import button
-        const importBtn = document.getElementById('importBtn');
+        // Import file input (triggered by label)
         const importFile = document.getElementById('importFile');
-        if (importBtn && importFile) {
-            importBtn.addEventListener('click', () => {
-                console.log('Import clicked');
-                importFile.click();
-            });
-            
+        if (importFile) {
             importFile.addEventListener('change', (e) => {
+                console.log('File selected:', e.target.files[0]?.name);
                 this.importLibrary(e);
+            });
+        }
+        
+        // Paste import button (alternative for mobile)
+        const pasteImportBtn = document.getElementById('pasteImportBtn');
+        if (pasteImportBtn) {
+            pasteImportBtn.addEventListener('click', () => {
+                console.log('Paste import clicked');
+                this.pasteImport();
             });
         }
 
@@ -764,6 +768,39 @@ class ReadingLibrary {
         
         reader.readAsText(file);
         event.target.value = ''; // Reset file input
+    }
+    
+    pasteImport() {
+        const data = prompt('Paste your library data (JSON format):');
+        if (!data) return;
+        
+        try {
+            const parsedData = JSON.parse(data);
+            
+            if (!parsedData.books || !Array.isArray(parsedData.books)) {
+                throw new Error('Invalid data format');
+            }
+            
+            const choice = confirm(`Import ${parsedData.books.length} books?\n\nThis will MERGE with your current library (${this.books.length} books).`);
+            
+            if (choice) {
+                // Merge
+                const existingIds = new Set(this.books.map(b => b.id));
+                const newBooks = parsedData.books.filter(b => !existingIds.has(b.id));
+                this.books = [...this.books, ...newBooks];
+                
+                this.normalizeBookStatuses();
+                this.saveBooks();
+                this.renderBooks();
+                this.updateStats();
+                
+                this.showToast(`✅ Library imported! Total: ${this.books.length} books`);
+            }
+            
+        } catch (error) {
+            alert('Error importing data: ' + error.message);
+            console.error('Paste import error:', error);
+        }
     }
 }
 
