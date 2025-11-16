@@ -129,7 +129,8 @@ class ReadingLibrary {
             status,
             progress,
             notes,
-            dateAdded: this.currentEditId ? this.books.find(b => b.id === this.currentEditId)?.dateAdded : new Date().toLocaleDateString()
+            dateAdded: this.currentEditId ? this.books.find(b => b.id === this.currentEditId)?.dateAdded : new Date().toLocaleDateString(),
+            lastRead: this.currentEditId ? new Date().toLocaleDateString() : null
         };
 
         console.log('Book object created:', book);
@@ -199,21 +200,41 @@ class ReadingLibrary {
                     <h3>${book.title}</h3>
                     <p class="author">by ${book.author}</p>
                     <p class="material-type">${book.materialType}</p>
-                    ${book.materialLink ? `<p class="material-link"><a href="${book.materialLink}" target="_blank">View Material</a></p>` : ''}
-                    <p class="category">${book.category}</p>
-                    <p class="status">${book.status}</p>
-                    <div class="progress">
-                        <span>Progress: ${book.progress}%</span>
+                    ${book.materialLink ? `<p class="material-link"><a href="${book.materialLink}" target="_blank">📖 View Material</a></p>` : ''}
+                    <p class="category">📂 ${book.category}</p>
+                    <div class="status-section">
+                        <span class="status-label">Status:</span>
+                        <select class="status-select" onchange="library.quickStatusChange(${book.id}, this.value)">
+                            <option value="To Read" ${book.status === 'To Read' ? 'selected' : ''}>📚 To Read</option>
+                            <option value="Reading" ${book.status === 'Reading' ? 'selected' : ''}>📖 Reading</option>
+                            <option value="Completed" ${book.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
+                            <option value="Paused" ${book.status === 'Paused' ? 'selected' : ''}>⏸️ Paused</option>
+                        </select>
+                    </div>
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Progress: ${book.progress}%</span>
+                            <div class="progress-controls">
+                                <button class="btn-mini" onclick="library.updateProgress(${book.id}, ${Math.max(0, book.progress - 10)})" title="-10%">−</button>
+                                <button class="btn-mini" onclick="library.updateProgress(${book.id}, ${Math.min(100, book.progress + 10)})" title="+10%">+</button>
+                            </div>
+                        </div>
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${book.progress}%"></div>
                         </div>
+                        <input type="range" class="progress-slider" min="0" max="100" value="${book.progress}" 
+                               onchange="library.updateProgress(${book.id}, this.value)" 
+                               oninput="this.nextElementSibling.textContent = this.value + '%'">
+                        <span class="progress-value">${book.progress}%</span>
                     </div>
-                    ${book.notes ? `<p class="notes">${book.notes}</p>` : ''}
-                    <p class="date">Added: ${book.dateAdded}</p>
+                    ${book.notes ? `<p class="notes">💭 ${book.notes}</p>` : ''}
+                    <p class="date">📅 Added: ${book.dateAdded}</p>
+                    ${book.lastRead ? `<p class="last-read">🕒 Last updated: ${book.lastRead}</p>` : ''}
                 </div>
                 <div class="book-actions">
-                    <button class="btn btn-sm btn-secondary" onclick="library.editBook(${book.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger" onclick="library.deleteBook(${book.id})">Delete</button>
+                    <button class="btn btn-sm btn-primary" onclick="library.quickStartReading(${book.id})" title="Start/Continue Reading">📖 Read</button>
+                    <button class="btn btn-sm btn-secondary" onclick="library.editBook(${book.id})">✏️ Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="library.deleteBook(${book.id})">🗑️ Delete</button>
                 </div>
             </div>
         `).join('');
@@ -255,6 +276,97 @@ class ReadingLibrary {
         }
 
         this.openModal();
+    }
+
+    quickStatusChange(id, newStatus) {
+        console.log(`Changing status for book ${id} to ${newStatus}`);
+        const book = this.books.find(b => b.id === id);
+        if (!book) return;
+        
+        const oldStatus = book.status;
+        book.status = newStatus;
+        book.lastRead = new Date().toLocaleDateString();
+        
+        // Auto-update progress based on status
+        if (newStatus === 'Reading' && oldStatus === 'To Read' && book.progress === 0) {
+            book.progress = 5; // Started reading
+        } else if (newStatus === 'Completed') {
+            book.progress = 100;
+        } else if (newStatus === 'To Read') {
+            book.progress = 0;
+        }
+        
+        this.saveBooks();
+        this.renderBooks();
+        this.updateStats();
+        
+        // Show feedback
+        this.showToast(`📚 "${book.title}" status changed to ${newStatus}`);
+    }
+    
+    updateProgress(id, newProgress) {
+        console.log(`Updating progress for book ${id} to ${newProgress}%`);
+        const book = this.books.find(b => b.id === id);
+        if (!book) return;
+        
+        book.progress = parseInt(newProgress);
+        book.lastRead = new Date().toLocaleDateString();
+        
+        // Auto-update status based on progress
+        if (book.progress === 100 && book.status !== 'Completed') {
+            book.status = 'Completed';
+        } else if (book.progress > 0 && book.progress < 100 && book.status === 'To Read') {
+            book.status = 'Reading';
+        } else if (book.progress === 0 && book.status === 'Reading') {
+            book.status = 'To Read';
+        }
+        
+        this.saveBooks();
+        this.renderBooks();
+        this.updateStats();
+    }
+    
+    quickStartReading(id) {
+        const book = this.books.find(b => b.id === id);
+        if (!book) return;
+        
+        if (book.status === 'To Read') {
+            this.quickStatusChange(id, 'Reading');
+            this.showToast(`📖 Started reading "${book.title}"`);
+        } else if (book.status === 'Reading') {
+            // Quick progress increment
+            const newProgress = Math.min(100, book.progress + 10);
+            this.updateProgress(id, newProgress);
+            this.showToast(`📈 Progress updated: ${newProgress}%`);
+        } else if (book.status === 'Completed') {
+            this.showToast(`✅ "${book.title}" is already completed!`);
+        }
+    }
+    
+    showToast(message) {
+        // Simple toast notification
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--gold);
+            color: var(--primary-bg);
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        `;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 
     deleteBook(id) {

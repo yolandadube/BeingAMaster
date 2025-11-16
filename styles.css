@@ -467,3 +467,142 @@ header h1 {
     background: var(--card-background);
     color: var(--text-primary);
 }
+
+/* Enhanced Interactive Elements for Progress Tracking */
+.status-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.status-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    min-width: 60px;
+}
+
+.status-select {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    padding: 4px 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.status-select:focus {
+    border-color: var(--gold);
+    outline: none;
+}
+
+.progress-section {
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.progress-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-mini {
+    background: var(--gold);
+    color: var(--primary-bg);
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-mini:hover {
+    background: #b8941f;
+    transform: scale(1.1);
+}
+
+.progress-slider {
+    width: 100%;
+    margin: 8px 0 4px 0;
+    cursor: pointer;
+}
+
+.progress-slider::-webkit-slider-thumb {
+    background: var(--gold);
+    border: 2px solid var(--primary-bg);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.progress-value {
+    font-size: 0.9em;
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.last-read {
+    color: var(--gold);
+    font-size: 0.85em;
+    margin: 4px 0;
+}
+
+.btn-primary {
+    background: var(--gold);
+    color: var(--primary-bg);
+}
+
+.btn-primary:hover {
+    background: #b8941f;
+    transform: translateY(-1px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--gold);
+}
+
+.btn-danger:hover {
+    background: rgba(220, 53, 69, 0.3);
+    border-color: #ff6b6b;
+}
+
+/* Toast Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
