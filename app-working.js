@@ -108,6 +108,29 @@ class ReadingLibrary {
                 this.openModal();
             });
         }
+        
+        // Export button
+        const exportBtn = document.getElementById('exportBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                console.log('Export clicked');
+                this.exportLibrary();
+            });
+        }
+        
+        // Import button
+        const importBtn = document.getElementById('importBtn');
+        const importFile = document.getElementById('importFile');
+        if (importBtn && importFile) {
+            importBtn.addEventListener('click', () => {
+                console.log('Import clicked');
+                importFile.click();
+            });
+            
+            importFile.addEventListener('change', (e) => {
+                this.importLibrary(e);
+            });
+        }
 
         // Form submission
         const form = document.getElementById('bookForm');
@@ -677,6 +700,70 @@ class ReadingLibrary {
         });
         
         this.renderBooks();
+    }
+    
+    exportLibrary() {
+        const data = {
+            books: this.books,
+            exportDate: new Date().toISOString(),
+            version: '1.0'
+        };
+        
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reading-library-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showToast(`📥 Library exported! ${this.books.length} books saved.`);
+    }
+    
+    importLibrary(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                if (!data.books || !Array.isArray(data.books)) {
+                    throw new Error('Invalid file format');
+                }
+                
+                const choice = confirm(`Import ${data.books.length} books?\n\nThis will replace your current library (${this.books.length} books).\n\nClick OK to replace, or Cancel to merge.`);
+                
+                if (choice) {
+                    // Replace
+                    this.books = data.books;
+                } else {
+                    // Merge - add books that don't exist
+                    const existingIds = new Set(this.books.map(b => b.id));
+                    const newBooks = data.books.filter(b => !existingIds.has(b.id));
+                    this.books = [...this.books, ...newBooks];
+                }
+                
+                this.normalizeBookStatuses();
+                this.saveBooks();
+                this.renderBooks();
+                this.updateStats();
+                
+                this.showToast(`✅ Library imported! Total: ${this.books.length} books`);
+                
+            } catch (error) {
+                alert('Error importing file: ' + error.message);
+                console.error('Import error:', error);
+            }
+        };
+        
+        reader.readAsText(file);
+        event.target.value = ''; // Reset file input
     }
 }
 
