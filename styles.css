@@ -923,6 +923,27 @@ header h1 {
     color: var(--text-secondary);
 }
 
+/* Pagination button styles - only current page is highlighted */
+.pagination-controls .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.pagination-controls .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.pagination-controls .btn-primary {
+    background: var(--gold) !important;
+    color: var(--primary-bg) !important;
+    font-weight: 600;
+}
+
+.pagination-controls .btn-primary:hover {
+    background: var(--secondary-color) !important;
+}
+
 .btn.disabled {
     opacity: 0.5;
     cursor: not-allowed;
