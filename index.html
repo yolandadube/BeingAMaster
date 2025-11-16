@@ -53,8 +53,40 @@
             </div>
         </div>
 
+        <!-- Search and Filter Controls -->
+        <div class="controls-section">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="🔍 Search by title, author, type, or category..." class="search-input">
+            </div>
+            
+            <div class="filter-section">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">📚 All</button>
+                    <button class="filter-btn" data-filter="To Read">📖 To Read</button>
+                    <button class="filter-btn" data-filter="Reading">📚 Reading</button>
+                    <button class="filter-btn" data-filter="Completed">✅ Completed</button>
+                    <button class="filter-btn" data-filter="Paused">⏸️ Paused</button>
+                </div>
+                
+                <div class="sort-section">
+                    <label for="sortSelect">Sort by:</label>
+                    <select id="sortSelect" class="sort-select">
+                        <option value="dateAdded">📅 Date Added</option>
+                        <option value="title">🔤 Title</option>
+                        <option value="author">👤 Author</option>
+                        <option value="progress">📊 Progress</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
         <div id="bookList" class="book-list">
             <!-- Books will be displayed here -->
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="pagination">
+            <!-- Pagination controls will be displayed here -->
         </div>
 
         <div id="emptyState" class="empty-state">

@@ -8,6 +8,16 @@ class ReadingLibrary {
         console.log('Loaded books from localStorage:', this.books.length, 'books');
         console.log('Books data:', this.books);
         this.currentEditId = null;
+        this.currentFilter = 'all';
+        this.currentSort = 'dateAdded';
+        this.searchQuery = '';
+        this.currentPage = 1;
+        this.booksPerPage = 6;
+        this.currentFilter = 'all';
+        this.currentSort = 'dateAdded';
+        this.searchQuery = '';
+        this.currentPage = 1;
+        this.booksPerPage = 6;
         
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
@@ -67,6 +77,36 @@ class ReadingLibrary {
                 if (e.target === modal) {
                     this.closeModal();
                 }
+            });
+        }
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value.toLowerCase();
+                this.currentPage = 1;
+                this.renderBooks();
+            });
+        }
+        
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.currentFilter = e.target.dataset.filter;
+                this.currentPage = 1;
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.renderBooks();
+            });
+        });
+        
+        // Sort dropdown
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                this.currentSort = e.target.value;
+                this.renderBooks();
             });
         }
     }
@@ -241,15 +281,28 @@ class ReadingLibrary {
     }
 
     updateStats() {
+        console.log('Updating stats. Total books:', this.books.length);
+        console.log('Books by status:', this.books.reduce((acc, book) => {
+            acc[book.status] = (acc[book.status] || 0) + 1;
+            return acc;
+        }, {}));
+        
         const totalElement = document.getElementById('totalBooks');
         const readingElement = document.getElementById('readingBooks');
         const completedElement = document.getElementById('completedBooks');
         const toReadElement = document.getElementById('toReadBooks');
-
+        
+        const toReadCount = this.books.filter(b => b.status === 'To Read').length;
+        const readingCount = this.books.filter(b => b.status === 'Reading').length;
+        const completedCount = this.books.filter(b => b.status === 'Completed').length;
+        const pausedCount = this.books.filter(b => b.status === 'Paused').length;
+        
         if (totalElement) totalElement.textContent = this.books.length;
-        if (readingElement) readingElement.textContent = this.books.filter(b => b.status === 'Reading').length;
-        if (completedElement) completedElement.textContent = this.books.filter(b => b.status === 'Completed').length;
-        if (toReadElement) toReadElement.textContent = this.books.filter(b => b.status === 'To Read').length;
+        if (toReadElement) toReadElement.textContent = toReadCount;
+        if (readingElement) readingElement.textContent = readingCount;
+        if (completedElement) completedElement.textContent = completedCount;
+        
+        console.log('Stats updated:', { total: this.books.length, toRead: toReadCount, reading: readingCount, completed: completedCount, paused: pausedCount });
     }
 
     editBook(id) {
@@ -385,6 +438,70 @@ class ReadingLibrary {
         } catch (error) {
             console.error('Error saving books:', error);
         }
+    }
+    
+    getStatusIcon(status) {
+        const icons = {
+            'To Read': '📚',
+            'Reading': '📖', 
+            'Completed': '✅',
+            'Paused': '⏸️'
+        };
+        return icons[status] || '📖';
+    }
+    
+    getQuickActionText(book) {
+        switch(book.status) {
+            case 'To Read': return 'Start';
+            case 'Reading': return 'Continue';
+            case 'Completed': return 'Review';
+            case 'Paused': return 'Resume';
+            default: return 'Read';
+        }
+    }
+    
+    updatePagination(totalItems, totalPages) {
+        const paginationContainer = document.getElementById('pagination');
+        if (!paginationContainer) return;
+        
+        if (totalPages <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+        
+        let paginationHTML = `
+            <div class="pagination-info">
+                Showing ${((this.currentPage - 1) * this.booksPerPage) + 1}-${Math.min(this.currentPage * this.booksPerPage, totalItems)} of ${totalItems} materials
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-sm ${this.currentPage === 1 ? 'disabled' : ''}" 
+                        onclick="library.changePage(${this.currentPage - 1})" 
+                        ${this.currentPage === 1 ? 'disabled' : ''}>‹ Previous</button>
+        `;
+        
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === this.currentPage || i === 1 || i === totalPages || (i >= this.currentPage - 1 && i <= this.currentPage + 1)) {
+                paginationHTML += `<button class="btn btn-sm ${i === this.currentPage ? 'btn-primary' : 'btn-secondary'}" onclick="library.changePage(${i})">${i}</button>`;
+            } else if (i === this.currentPage - 2 || i === this.currentPage + 2) {
+                paginationHTML += '<span class="pagination-ellipsis">...</span>';
+            }
+        }
+        
+        paginationHTML += `
+                <button class="btn btn-sm ${this.currentPage === totalPages ? 'disabled' : ''}" 
+                        onclick="library.changePage(${this.currentPage + 1})" 
+                        ${this.currentPage === totalPages ? 'disabled' : ''}>Next ›</button>
+            </div>
+        `;
+        
+        paginationContainer.innerHTML = paginationHTML;
+    }
+    
+    changePage(newPage) {
+        this.currentPage = newPage;
+        this.renderBooks();
+        document.querySelector('.book-list').scrollIntoView({ behavior: 'smooth' });
     }
 }
 
