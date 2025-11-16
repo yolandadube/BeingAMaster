@@ -148,8 +148,13 @@ class ReadingLibrary {
 
         // Save and refresh
         this.saveBooks();
-        this.renderBooks();
-        this.updateStats();
+        
+        // Small delay to ensure DOM is stable
+        setTimeout(() => {
+            this.renderBooks();
+            this.updateStats();
+        }, 100);
+        
         this.closeModal();
         
         console.log('=== SAVE COMPLETED ===');
@@ -158,9 +163,24 @@ class ReadingLibrary {
     renderBooks() {
         console.log('Rendering books...');
         console.log('Number of books to render:', this.books.length);
-        const container = document.getElementById('bookList');
+        
+        // Try multiple possible container IDs
+        let container = document.getElementById('bookList');
         if (!container) {
-            console.error('Books container not found');
+            container = document.getElementById('booksContainer');
+        }
+        if (!container) {
+            container = document.querySelector('.book-list');
+        }
+        
+        console.log('Container search results:', {
+            bookList: !!document.getElementById('bookList'),
+            booksContainer: !!document.getElementById('booksContainer'),
+            querySelector: !!document.querySelector('.book-list')
+        });
+        
+        if (!container) {
+            console.error('No books container found with any method');
             return;
         }
         console.log('Container found:', container);
