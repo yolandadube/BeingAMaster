@@ -267,14 +267,7 @@ class ReadingLibrary {
     }
 
     renderBooks() {
-        console.log('Rendering books...');
-        console.log('Current filter:', this.currentFilter, 'Search:', this.searchQuery);
-        console.log('Number of books to render:', this.books.length);
-        
-        // Debug: Show all book statuses
-        const statuses = this.books.map(book => book.status);
-        console.log('All book statuses:', statuses);
-        console.log('Unique statuses:', [...new Set(statuses)]);
+        console.log('Rendering books... Current filter:', this.currentFilter);
         
         // Try multiple possible container IDs
         let container = document.getElementById('bookList');
@@ -286,7 +279,7 @@ class ReadingLibrary {
         }
         
         if (!container) {
-            console.error('No books container found with any method');
+            console.error('No books container found');
             return;
         }
         
@@ -297,19 +290,16 @@ class ReadingLibrary {
                 book.status = 'To Read';
             }
             
-            console.log(`Checking book "${book.title}" with status "${book.status}" against filter "${this.currentFilter}"`);
             const matchesFilter = this.currentFilter === 'all' || book.status === this.currentFilter;
             const matchesSearch = this.searchQuery === '' || 
                 book.title.toLowerCase().includes(this.searchQuery) ||
                 book.author.toLowerCase().includes(this.searchQuery) ||
                 book.materialType.toLowerCase().includes(this.searchQuery) ||
                 book.category.toLowerCase().includes(this.searchQuery);
-            const matches = matchesFilter && matchesSearch;
-            console.log(`Book matches: ${matches} (filter: ${matchesFilter}, search: ${matchesSearch})`);
-            return matches;
+            return matchesFilter && matchesSearch;
         });
         
-        console.log('After filtering:', filteredBooks.length, 'books');
+        console.log('Filtered books:', filteredBooks.length);
         
         // Sort books
         filteredBooks.sort((a, b) => {
