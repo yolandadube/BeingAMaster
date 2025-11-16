@@ -357,9 +357,9 @@ class ReadingLibrary {
 
         // Render books in grid format
         container.innerHTML = `
-            <div class="books-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; width: 100%;">
+            <div class="books-grid" style="display: grid !important; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important; gap: 20px !important; width: 100% !important; max-width: 100% !important;">
                 ${paginatedBooks.map(book => `
-                    <div class="book-card" data-id="${book.id}" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; min-height: 400px;">
+                    <div class="book-card" data-id="${book.id}" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex !important; flex-direction: column !important; min-height: 400px; width: 100% !important; max-width: 100% !important;">
                         <div class="book-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 10px;">
                             <h3 class="book-title" style="color: var(--gold); margin: 0; font-size: 1.1em; font-weight: 600; flex: 1; line-height: 1.3;">${book.title}</h3>
                             <div class="book-status status-${book.status.toLowerCase().replace(' ', '-')}" style="padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: 600; white-space: nowrap; background: rgba(108, 117, 125, 0.2); color: #6c757d;">${this.getStatusIcon(book.status)} ${book.status}</div>
