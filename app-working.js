@@ -334,39 +334,39 @@ class ReadingLibrary {
 
         // Render books in grid format
         container.innerHTML = `
-            <div class="books-grid">
+            <div class="books-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; width: 100%;">
                 ${paginatedBooks.map(book => `
-                    <div class="book-card" data-id="${book.id}">
-                        <div class="book-header">
-                            <h3 class="book-title">${book.title}</h3>
-                            <div class="book-status status-${book.status.toLowerCase().replace(' ', '-')}">${this.getStatusIcon(book.status)} ${book.status}</div>
+                    <div class="book-card" data-id="${book.id}" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; min-height: 400px;">
+                        <div class="book-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 10px;">
+                            <h3 class="book-title" style="color: var(--gold); margin: 0; font-size: 1.1em; font-weight: 600; flex: 1; line-height: 1.3;">${book.title}</h3>
+                            <div class="book-status status-${book.status.toLowerCase().replace(' ', '-')}" style="padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: 600; white-space: nowrap; background: rgba(108, 117, 125, 0.2); color: #6c757d;">${this.getStatusIcon(book.status)} ${book.status}</div>
                         </div>
-                        <div class="book-info">
-                            <p class="author">👤 ${book.author}</p>
-                            <p class="material-info">
-                                <span class="material-type">📖 ${book.materialType}</span>
-                                <span class="category">🏷️ ${book.category}</span>
+                        <div class="book-info" style="margin-bottom: 15px;">
+                            <p class="author" style="color: var(--text-secondary); font-style: italic; margin: 0 0 8px 0;">👤 ${book.author}</p>
+                            <p class="material-info" style="display: flex; justify-content: space-between; margin: 8px 0; flex-wrap: wrap; gap: 8px;">
+                                <span class="material-type" style="color: var(--text-secondary); font-size: 0.85em;">📖 ${book.materialType}</span>
+                                <span class="category" style="color: var(--text-secondary); font-size: 0.85em;">🏷️ ${book.category}</span>
                             </p>
-                            ${book.materialLink ? `<a href="${book.materialLink}" target="_blank" class="material-link">🔗 Open Material</a>` : ''}
+                            ${book.materialLink ? `<a href="${book.materialLink}" target="_blank" class="material-link" style="display: inline-block; color: var(--gold); text-decoration: none; font-weight: 500; margin: 8px 0;">🔗 Open Material</a>` : ''}
                         </div>
                         
-                        <div class="progress-section">
-                            <div class="progress-header">
-                                <span class="progress-text">Progress: ${book.progress}%</span>
-                                <div class="progress-controls">
-                                    <button class="btn-mini" onclick="library.updateProgress(${book.id}, ${Math.max(0, book.progress - 10)})" title="-10%">−</button>
-                                    <button class="btn-mini" onclick="library.updateProgress(${book.id}, ${Math.min(100, book.progress + 10)})" title="+10%">+</button>
+                        <div class="progress-section" style="margin: 15px 0; padding: 12px; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
+                            <div class="progress-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span class="progress-text" style="font-weight: 600; color: var(--gold);">Progress: ${book.progress}%</span>
+                                <div class="progress-controls" style="display: flex; gap: 5px;">
+                                    <button class="btn-mini" onclick="library.updateProgress(${book.id}, ${Math.max(0, book.progress - 10)})" title="-10%" style="background: var(--gold); color: var(--primary-bg); border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; font-weight: bold; font-size: 14px;">−</button>
+                                    <button class="btn-mini" onclick="library.updateProgress(${book.id}, ${Math.min(100, book.progress + 10)})" title="+10%" style="background: var(--gold); color: var(--primary-bg); border: none; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; font-weight: bold; font-size: 14px;">+</button>
                                 </div>
                             </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${book.progress}%"></div>
+                            <div class="progress-bar" style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin: 8px 0;">
+                                <div class="progress-fill" style="height: 100%; background: linear-gradient(90deg, var(--gold), #f4d03f); border-radius: 4px; transition: width 0.3s ease; width: ${book.progress}%;"></div>
                             </div>
                             <input type="range" class="progress-slider" min="0" max="100" value="${book.progress}" 
-                                   onchange="library.updateProgress(${book.id}, this.value)">
+                                   onchange="library.updateProgress(${book.id}, this.value)" style="width: 100%; margin: 8px 0 4px 0; cursor: pointer;">
                         </div>
                         
-                        <div class="status-controls">
-                            <select class="status-select" onchange="library.quickStatusChange(${book.id}, this.value)">
+                        <div class="status-controls" style="margin: 15px 0;">
+                            <select class="status-select" onchange="library.quickStatusChange(${book.id}, this.value)" style="width: 100%; padding: 8px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); cursor: pointer;">
                                 <option value="To Read" ${book.status === 'To Read' ? 'selected' : ''}>📚 To Read</option>
                                 <option value="Reading" ${book.status === 'Reading' ? 'selected' : ''}>📖 Reading</option>
                                 <option value="Completed" ${book.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
@@ -374,17 +374,17 @@ class ReadingLibrary {
                             </select>
                         </div>
                         
-                        ${book.notes ? `<div class="notes">💭 ${book.notes}</div>` : ''}
+                        ${book.notes ? `<div class="notes" style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 6px; margin: 12px 0; font-style: italic; border-left: 3px solid var(--gold); font-size: 0.9em;">💭 ${book.notes}</div>` : ''}
                         
-                        <div class="book-meta">
+                        <div class="book-meta" style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 0.8em; color: var(--text-secondary); flex-wrap: wrap; gap: 8px;">
                             <span class="date">📅 ${book.dateAdded}</span>
-                            ${book.lastRead ? `<span class="last-read">🕒 ${book.lastRead}</span>` : ''}
+                            ${book.lastRead ? `<span class="last-read" style="color: var(--gold);">🕒 ${book.lastRead}</span>` : ''}
                         </div>
                         
-                        <div class="book-actions">
-                            <button class="btn btn-sm btn-primary" onclick="library.quickStartReading(${book.id})" title="Quick Action">⚡ ${this.getQuickActionText(book)}</button>
-                            <button class="btn btn-sm btn-secondary" onclick="library.editBook(${book.id})">✏️ Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="library.deleteBook(${book.id})">🗑️ Delete</button>
+                        <div class="book-actions" style="display: flex; gap: 8px; margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border);">
+                            <button class="btn btn-sm btn-primary" onclick="library.quickStartReading(${book.id})" title="Quick Action" style="padding: 6px 12px; font-size: 0.85em; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; background: var(--gold); color: var(--primary-bg);">⚡ ${this.getQuickActionText(book)}</button>
+                            <button class="btn btn-sm btn-secondary" onclick="library.editBook(${book.id})" style="padding: 6px 12px; font-size: 0.85em; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; background: rgba(255, 255, 255, 0.1); color: var(--text-primary); border: 1px solid var(--border);">✏️ Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="library.deleteBook(${book.id})" style="padding: 6px 12px; font-size: 0.85em; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; background: rgba(220, 53, 69, 0.2); color: #ff6b6b; border: 1px solid rgba(220, 53, 69, 0.3);">🗑️ Delete</button>
                         </div>
                     </div>
                 `).join('')}
