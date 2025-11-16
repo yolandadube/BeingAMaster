@@ -4,13 +4,19 @@ console.log('JavaScript loading...');
 class ReadingLibrary {
     constructor() {
         console.log('ReadingLibrary constructor called');
-        this.books = JSON.parse(localStorage.getItem('readingLibrary')) || [];
+        
+        // Check localStorage
+        const rawData = localStorage.getItem('readingLibrary');
+        console.log('Raw localStorage data:', rawData);
+        
+        this.books = JSON.parse(rawData) || [];
         console.log('Loaded books from localStorage:', this.books.length, 'books');
+        console.log('All books:', this.books);
         
         // Fix inconsistent status values
         this.normalizeBookStatuses();
         
-        console.log('Books data:', this.books);
+        console.log('After normalization - Books:', this.books.length);
         this.currentEditId = null;
         this.currentFilter = 'all';
         this.currentSort = 'dateAdded';
@@ -267,7 +273,10 @@ class ReadingLibrary {
     }
 
     renderBooks() {
-        console.log('Rendering books... Current filter:', this.currentFilter);
+        console.log('=== RENDER BOOKS CALLED ===');
+        console.log('Total books in library:', this.books.length);
+        console.log('Current filter:', this.currentFilter);
+        console.log('Search query:', this.searchQuery);
         
         // Try multiple possible container IDs
         let container = document.getElementById('bookList');
@@ -280,6 +289,20 @@ class ReadingLibrary {
         
         if (!container) {
             console.error('No books container found');
+            return;
+        }
+        
+        console.log('Container found:', container);
+        
+        // Check if we have books before filtering
+        if (this.books.length === 0) {
+            console.warn('NO BOOKS IN LIBRARY!');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>📚 No materials in library</h3>
+                    <p>Your books may have been lost. Check browser console for details.</p>
+                </div>
+            `;
             return;
         }
         
