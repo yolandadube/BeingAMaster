@@ -408,11 +408,18 @@ class ReadingLibrary {
         
         // Pagination
         const totalPages = Math.ceil(filteredBooks.length / this.booksPerPage);
+        
+        // Reset to page 1 if current page is out of bounds
+        if (this.currentPage > totalPages && totalPages > 0) {
+            console.warn(`Page ${this.currentPage} out of bounds. Resetting to page 1.`);
+            this.currentPage = 1;
+        }
+        
         const startIndex = (this.currentPage - 1) * this.booksPerPage;
         const endIndex = startIndex + this.booksPerPage;
         const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
         
-        console.log('Filtered:', filteredBooks.length, 'Paginated:', paginatedBooks.length);
+        console.log('Filtered:', filteredBooks.length, 'Total pages:', totalPages, 'Current page:', this.currentPage, 'Showing:', paginatedBooks.length);
 
         if (filteredBooks.length === 0) {
             container.innerHTML = `
@@ -725,9 +732,22 @@ class ReadingLibrary {
     }
     
     changePage(newPage) {
+        console.log('Changing to page:', newPage);
+        
+        // Validate page number
+        if (newPage < 1) {
+            console.warn('Invalid page number:', newPage);
+            return;
+        }
+        
         this.currentPage = newPage;
         this.renderBooks();
-        document.querySelector('.book-list').scrollIntoView({ behavior: 'smooth' });
+        
+        // Scroll to top of book list
+        const bookList = document.getElementById('bookList') || document.querySelector('.book-list');
+        if (bookList) {
+            bookList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
     
     clearFilters() {
